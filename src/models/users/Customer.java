@@ -1,6 +1,7 @@
 package models.users;
 
 import enums.UserRole;
+import models.Booking;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,11 +9,11 @@ import java.util.List;
 import java.util.Objects;
 
 public class Customer extends User {
-    private final List<Booking> bookingList;
+    private final List<Booking> bookings;
 
     public Customer(String name, String email, String phone) {
         super(name, email, phone, UserRole.CUSTOMER);
-        this.bookingList = new ArrayList<>();
+        this.bookings = new ArrayList<>();
     }
 
     public void addBooking(Booking booking) {
@@ -23,6 +24,4 @@ public class Customer extends User {
     public List<Booking> getBookings() {
         return Collections.unmodifiableList(bookings);
     }
-
-
 }
