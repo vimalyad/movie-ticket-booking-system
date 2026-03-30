@@ -2,37 +2,29 @@ package models;
 
 import enums.SeatAvailabilityStatus;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class ShowSeat {
-
-    private final String id;
+    private final String id = UUID.randomUUID().toString();
     private final Seat seat;
     private final String showId;
-    private SeatAvailabilityStatus status;
+    private SeatAvailabilityStatus status = SeatAvailabilityStatus.AVAILABLE;
 
     public ShowSeat(Seat seat, String showId) {
-        Objects.requireNonNull(seat, "seat must not be null");
-        Objects.requireNonNull(showId, "showId must not be null");
-        if (showId.isBlank()) throw new IllegalArgumentException("showId must not be blank");
-
-        this.id = UUID.randomUUID().toString();
         this.seat = seat;
         this.showId = showId;
-        this.status = SeatAvailabilityStatus.AVAILABLE;
     }
 
     public void lock() {
         if (this.status != SeatAvailabilityStatus.AVAILABLE) {
-            throw new IllegalStateException("Cannot lock seat. Current status: " + this.status);
+            throw new IllegalStateException("Seat not available.");
         }
         this.status = SeatAvailabilityStatus.LOCKED;
     }
 
     public void book() {
         if (this.status != SeatAvailabilityStatus.LOCKED) {
-            throw new IllegalStateException("Seat must be locked before booking. Current status: " + this.status);
+            throw new IllegalStateException("Seat must be locked first.");
         }
         this.status = SeatAvailabilityStatus.BOOKED;
     }
@@ -55,10 +47,5 @@ public class ShowSeat {
 
     public SeatAvailabilityStatus getStatus() {
         return status;
-    }
-
-    @Override
-    public String toString() {
-        return "ShowSeat[" + seat.getSeatLabel() + ", " + status + "]";
     }
 }
