@@ -3,7 +3,6 @@ package enums;
 import java.time.LocalTime;
 
 public enum ShowType {
-
     MORNING(LocalTime.of(6, 0), LocalTime.of(11, 59)),
     AFTERNOON(LocalTime.of(12, 0), LocalTime.of(16, 59)),
     EVENING(LocalTime.of(17, 0), LocalTime.of(20, 59)),
@@ -24,9 +23,5 @@ public enum ShowType {
             }
         }
         return NIGHT;
-    }
-
-    public String label() {
-        return name().charAt(0) + name().substring(1).toLowerCase();
     }
 }
