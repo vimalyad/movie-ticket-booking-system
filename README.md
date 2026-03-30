@@ -151,7 +151,13 @@ classDiagram
         -LocalDateTime startTime
     }
 
-    %% Relationships Models
+    %% FIX: Added missing relationships
+    Show --> Movie : references
+    Show --> Screen : references
+    Screen --> Theatre : belongsTo
+    SeatLock --> ShowSeat : references
+
+    %% Existing relationships
     ShowSeat o-- Seat : Aggregation
     Booking o-- ShowSeat : Aggregation
     Booking *-- Money : Composition
@@ -162,16 +168,52 @@ classDiagram
     Booking --> BookingStatus
     Payment --> PaymentStatus
 
+    %% FIX: Added missing enum relationships
+    Seat --> SeatType
+    PricingRule --> SeatType
+    PricingRule --> ShowType
+    PricingRule --> DayType
+
     %% =======================
-    %% REPOSITORIES (Interfaces & Impls)
+    %% REPOSITORIES
     %% =======================
-    class BookingRepository { <<interface>> +save(Booking), +findById(String), +findByStatus(BookingStatus) }
-    class PaymentRepository { <<interface>> +save(Payment), +findByBookingId(String) }
-    class PricingRuleRepository { <<interface>> +save(PricingRule), +findActiveRules() }
-    class ShowSeatRepository { <<interface>> +findAllById(List), +findByShowId(String), +saveAll(List) }
-    class ShowRepository { <<interface>> +findById(String), +findByMovieAndCity(String, String) }
-    class MovieRepository { <<interface>> +findById(String), +findMoviesPlayingInCity(String) }
-    class TheatreRepository { <<interface>> +findById(String), +findByCity(String) }
+    class BookingRepository {
+        <<interface>>
+        +save(Booking)
+        +findById(String)
+        +findByStatus(BookingStatus)
+    }
+    class PaymentRepository {
+        <<interface>>
+        +save(Payment)
+        +findByBookingId(String)
+    }
+    class PricingRuleRepository {
+        <<interface>>
+        +save(PricingRule)
+        +findActiveRules()
+    }
+    class ShowSeatRepository {
+        <<interface>>
+        +findAllById(List)
+        +findByShowId(String)
+        +saveAll(List)
+    }
+    class ShowRepository {
+        <<interface>>
+        +findById(String)
+        +findByMovieAndCity(String, String)
+    }
+    class MovieRepository {
+        <<interface>>
+        +findById(String)
+        +findMoviesPlayingInCity(String)
+    }
+    class TheatreRepository {
+        <<interface>>
+        +findById(String)
+        +findByCity(String)
+    }
 
     class InMemoryBookingRepository
     class InMemoryPaymentRepository
@@ -192,8 +234,13 @@ classDiagram
     %% =======================
     %% SERVICES & FACADES
     %% =======================
-    class PricingStrategy { <<interface>> +calculateExtraCharge(ShowSeat, Show) Money }
-    class DataDrivenPricingStrategy { +calculateExtraCharge(ShowSeat, Show) Money }
+    class PricingStrategy {
+        <<interface>>
+        +calculateExtraCharge(ShowSeat, Show) Money
+    }
+    class DataDrivenPricingStrategy {
+        +calculateExtraCharge(ShowSeat, Show) Money
+    }
     PricingStrategy <|.. DataDrivenPricingStrategy
     DataDrivenPricingStrategy --> PricingRule : Uses
 
@@ -211,8 +258,13 @@ classDiagram
     }
     SeatLockProvider *-- SeatLock : Composition
 
-    class BookingEventListener { <<interface>> +onBookingConfirmed(Booking), +onBookingCancelled(Booking), +onBookingExpired(Booking) }
-    
+    class BookingEventListener {
+        <<interface>>
+        +onBookingConfirmed(Booking)
+        +onBookingCancelled(Booking)
+        +onBookingExpired(Booking)
+    }
+
     class BookingExpiryScheduler {
         -ScheduledExecutorService scheduler
         +start()
@@ -240,6 +292,7 @@ classDiagram
     SearchService --> ShowRepository
     SearchService --> ShowSeatRepository
 
+    %% FIX: BookingFacade no longer directly accesses PaymentRepository
     class BookingFacade {
         +initiateBooking(BookingRequest) BookingResponse
         +confirmBooking(String, PaymentRequest) String
@@ -251,8 +304,16 @@ classDiagram
     BookingFacade --> SeatLockProvider
     BookingFacade --> PricingEngine
     BookingFacade --> PaymentService
-    BookingFacade --> PaymentRepository
-    BookingFacade o-- BookingEventListener
+    BookingFacade o-- BookingEventListener : List
+
+    %% =======================
+    %% ADMIN SERVICE (FIX: new layer between AdminController and repo)
+    %% =======================
+    class AdminService {
+        +addPricingRule(AddPricingRuleRequest) String
+        +deactivatePricingRule(String) String
+    }
+    AdminService --> PricingRuleRepository
 
     %% =======================
     %% DTOs
@@ -286,7 +347,9 @@ classDiagram
     class AdminController {
         +addPricingRule(AddPricingRuleRequest) String
     }
-    AdminController --> PricingRuleRepository
+    AdminController --> AdminService
+
+    AdminController --> UserRole : authCheck
 
 ```
 
